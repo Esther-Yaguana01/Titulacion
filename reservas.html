@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Crear Reserva - Gestión Turística Inteligente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root{
+        --navy:#0b4970; /* azul marino */
+        --turquoise:#17b6cf; /* turquesa */
+        --white: #ffffff;
+        --light-gray: #f5f5f5;
+        --border-gray: #d0d0d0;
+      }
+      *{margin:0;padding:0;box-sizing:border-box}
+      html,body{height:100%;font-family:'Poppins',system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;background-color:#03121c}
+      body{
+        position:relative;
+        background-image:url('assets/fishes.png');
+        background-size:cover;
+        background-position:center top;
+        background-attachment:fixed;
+        background-repeat:no-repeat;
+        color:var(--navy);
+      }
+
+      body::before{
+        content:'';
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,0.45);
+        pointer-events:none;
+        z-index:0;
+      }
+
+      header, main{
+        position:relative;
+        z-index:1;
+      }
+
+      /* Top navigation */
+      .topbar{
+        background:var(--navy);
+        padding:14px 28px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        box-shadow:0 2px 8px rgba(0,0,0,0.1);
+      }
+      .brand{font-weight:700;color:var(--white);font-size:20px}
+      nav ul{list-style:none;margin:0;padding:0;display:flex;gap:22px;align-items:center}
+      nav a{color:var(--white);text-decoration:none;font-weight:600;transition:opacity 0.3s}
+      nav a:hover{opacity:0.8}
+
+      /* Main container */
+      main{padding:40px 20px;display:flex;justify-content:center}
+
+      /* Form container */
+      .form-container{
+        background:var(--white);
+        border-radius:12px;
+        box-shadow:0 4px 16px rgba(0,0,0,0.08);
+        padding:40px;
+        max-width:600px;
+        width:100%;
+      }
+
+      .form-title{
+        font-size:28px;
+        font-weight:700;
+        color:var(--navy);
+        margin-bottom:8px;
+      }
+
+      .form-subtitle{
+        font-size:14px;
+        color:#666;
+        margin-bottom:32px;
+      }
+
+      .form-group{
+        margin-bottom:24px;
+        display:flex;
+        flex-direction:column;
+      }
+
+      label{
+        font-weight:600;
+        color:var(--navy);
+        margin-bottom:8px;
+        font-size:14px;
+      }
+
+      input,select{
+        padding:12px 14px;
+        border:2px solid var(--border-gray);
+        border-radius:6px;
+        font-family:'Poppins',system-ui;
+        font-size:14px;
+        transition:border-color 0.3s, box-shadow 0.3s;
+      }
+
+      input:focus,select:focus{
+        outline:none;
+        border-color:var(--turquoise);
+        box-shadow:0 0 0 3px rgba(23,182,207,0.1);
+      }
+
+      input::placeholder{
+        color:#999;
+      }
+
+      .form-row{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:16px;
+      }
+
+      @media(max-width:600px){
+        .form-row{
+          grid-template-columns:1fr;
+        }
+        .form-container{
+          padding:24px;
+        }
+      }
+
+      .form-group-full{
+        grid-column:1 / -1;
+      }
+
+      .btn-primary{
+        display:inline-block;
+        width:100%;
+        padding:14px 28px;
+        border-radius:8px;
+        background:var(--turquoise);
+        color:var(--navy);
+        font-weight:700;
+        border:none;
+        text-decoration:none;
+        font-size:16px;
+        box-shadow:0 6px 18px rgba(23,182,207,0.18);
+        cursor:pointer;
+        transition:transform 0.2s, box-shadow 0.2s;
+      }
+
+      .btn-primary:hover{
+        transform:translateY(-2px);
+        box-shadow:0 10px 26px rgba(11,73,112,0.2);
+      }
+
+      .btn-primary:active{
+        transform:translateY(0);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Isabela Tour Center</div>
+      <nav aria-label="Menú principal">
+        <ul>
+          <li><a href="index.html">Inicio</a></li>
+          <li><a href="#tours">Tours</a></li>
+          <li><a href="reservas.html" style="color:var(--turquoise)">Reservas</a></li>
+          <li><a href="#clientes">Clientes</a></li>
+          <li><a href="#reportes">Reportes</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <div class="form-container">
+        <h1 class="form-title">Crear Reserva</h1>
+        <p class="form-subtitle">Completa el formulario para reservar un tour en Galápagos</p>
+
+        <form id="reserva-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nombre">Nombre del Turista</label>
+              <input type="text" id="nombre" name="nombre" placeholder="Ej: Juan Pérez" required>
+            </div>
+
+            <div class="form-group">
+              <label for="cedula">Cédula/Pasaporte</label>
+              <input type="text" id="cedula" name="cedula" placeholder="Ej: 1234567890" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fecha">Fecha del Tour</label>
+              <input type="date" id="fecha" name="fecha" required>
+            </div>
+
+            <div class="form-group">
+              <label for="pasajeros">Número de Pasajeros</label>
+              <input type="number" id="pasajeros" name="pasajeros" min="1" max="50" placeholder="Ej: 4" required>
+            </div>
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="tour">Selección de Tour</label>
+            <select id="tour" name="tour" required>
+              <option value="">-- Selecciona un tour --</option>
+              <option value="tuneles">Tour Los Túneles</option>
+              <option value="tintoreras">Tour Islote Tintoreras</option>
+              <option value="sierra-negra">Tour Volcán Sierra Negra</option>
+              <option value="bahia">Tour de Bahía</option>
+              <option value="humedales">Tour Humedales (Muro de las Lágrimas)</option>
+              <option value="buceo-isla-tortuga">Tour de Buceo Isla Tortuga</option>
+            </select>
+          </div>
+
+          <div class="form-group form-group-full">
+            <button type="submit" class="btn-primary">Confirmar Reserva</button>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <script>
+      const form = document.getElementById('reserva-form');
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('¡Reserva confirmada! Nos pondremos en contacto pronto.');
+        form.reset();
+      });
+    </script>
+  </body>
+</html>
