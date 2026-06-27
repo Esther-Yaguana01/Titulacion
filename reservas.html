@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Crear Reserva - Gestión Turística Inteligente</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="supabase-config.js"></script>
     <style>
       :root{
         --navy:#0b4970; /* azul marino */
@@ -166,6 +168,7 @@
           <li><a href="reservas.html" style="color:var(--turquoise)">Reservas</a></li>
           <li><a href="#clientes">Clientes</a></li>
           <li><a href="#reportes">Reportes</a></li>
+          <li><a href="contabilidad.html" id="btn-contabilidad">Contabilidad</a></li>
         </ul>
       </nav>
     </header>
@@ -221,9 +224,28 @@
     </main>
 
     <script>
+      // Persistencia de datos orientada a arquitectura web para la tesis.
       const form = document.getElementById('reserva-form');
-      form.addEventListener('submit', function(e) {
+
+      form.addEventListener('submit', async function(e) {
         e.preventDefault();
+
+        const datos_formulario = {
+          nombre_turista: document.getElementById('nombre').value,
+          cedula_pasaporte: document.getElementById('cedula').value,
+          fecha_tour: document.getElementById('fecha').value,
+          numero_pasajeros: document.getElementById('pasajeros').value,
+          seleccion_tour: document.getElementById('tour').value
+        };
+
+        const { data, error } = await supabaseClient.from('reservas').insert([datos_formulario]);
+
+        if (error) {
+          console.error('No se pudo guardar la reserva:', error);
+          alert('No se pudo guardar la reserva. Intenta nuevamente.');
+          return;
+        }
+
         alert('¡Reserva confirmada! Nos pondremos en contacto pronto.');
         form.reset();
       });

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Contabilidad - Gestión Turística Inteligente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="supabase-config.js"></script>
+    <style>
+      :root{
+        --navy:#0b4970; /* azul marino */
+        --turquoise:#17b6cf; /* turquesa */
+        --white: #ffffff;
+      }
+      *{margin:0;padding:0;box-sizing:border-box}
+      html,body{height:100%;font-family:'Poppins',system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
+      body{
+        background-image: url('assets/fishes.png');
+        background-size: cover;
+        background-position: center top;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        background-color: #03121c;
+        color:var(--white);
+        filter: brightness(1.15) contrast(1.1);
+      }
+
+      .topbar{
+        background:var(--navy);
+        padding:14px 28px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+      }
+      .brand{font-weight:700;color:var(--white);font-size:20px}
+      nav ul{list-style:none;margin:0;padding:0;display:flex;gap:22px;align-items:center}
+      nav a{color:var(--white);text-decoration:none;font-weight:600}
+      nav a:hover{opacity:0.9}
+
+      main{padding:40px 20px;display:flex;justify-content:center}
+      .panel{
+        background:rgba(255,255,255,0.95);
+        color:var(--navy);
+        border-radius:12px;
+        padding:40px;
+        max-width:760px;
+        width:100%;
+        box-shadow:0 4px 16px rgba(0,0,0,0.12);
+      }
+      h1{font-size:32px;margin-bottom:12px}
+      p{line-height:1.6;margin-bottom:12px}
+    </style>
+    <script>
+      // RBAC: control de acceso por roles simple para la tesis.
+      const usuarioRol = "empleado";
+      if (usuarioRol !== "dueño") {
+        alert("Acceso Denegado");
+        window.location.href = "index.html";
+      }
+    </script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Isabela Tour Center</div>
+      <nav aria-label="Menú principal">
+        <ul>
+          <li><a href="index.html">Inicio</a></li>
+          <li><a href="reservas.html">Reservas</a></li>
+          <li><a href="contabilidad.html" id="btn-contabilidad">Contabilidad</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <section class="panel">
+        <h1>Contabilidad</h1>
+        <p>Esta sección está reservada para el área financiera del negocio.</p>
+        <p>El acceso está restringido mediante un control por roles básico (RBAC) para fines académicos.</p>
+        <div id="resumen-reservas"></div>
+      </section>
+    </main>
+
+    <script>
+      // Persistencia de datos orientada a arquitectura web para la tesis.
+      document.addEventListener('DOMContentLoaded', async function () {
+        const contenedor = document.getElementById('resumen-reservas');
+
+        const { data, error } = await supabaseClient.from('reservas').select('*');
+
+        if (error) {
+          contenedor.innerHTML = '<p>No se pudieron cargar los datos de contabilidad.</p>';
+          console.error(error);
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          contenedor.innerHTML = '<p>No hay reservas registradas aún.</p>';
+          return;
+        }
+
+        const filasHtml = data.map((reserva) => `
+          <div style="border-top:1px solid #d0d0d0; padding:12px 0;">
+            <strong>${reserva.nombre_turista || 'Sin nombre'}</strong><br>
+            <span>Cédula/Pasaporte: ${reserva.cedula_pasaporte || 'N/A'}</span><br>
+            <span>Fecha: ${reserva.fecha_tour || 'N/A'}</span><br>
+            <span>Pasajeros: ${reserva.numero_pasajeros || 'N/A'}</span><br>
+            <span>Tour: ${reserva.seleccion_tour || 'N/A'}</span>
+          </div>
+        `).join('');
+
+        contenedor.innerHTML = filasHtml;
+      });
+    </script>
+  </body>
+</html>

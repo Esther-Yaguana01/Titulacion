@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Gestión Turística Inteligente</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="supabase-config.js"></script>
     <style>
       :root{
         --navy:#0b4970; /* azul marino */
@@ -82,6 +84,7 @@
           <li><a href="reservas.html">Reservas</a></li>
           <li><a href="#clientes">Clientes</a></li>
           <li><a href="#reportes">Reportes</a></li>
+          <li><a href="contabilidad.html" id="btn-contabilidad">Contabilidad</a></li>
         </ul>
       </nav>
     </header>
@@ -95,5 +98,15 @@
         </div>
       </section>
     </main>
+
+    <script>
+      // RBAC: control de acceso por roles simple para la tesis.
+      const usuarioRol = "empleado";
+      const botonContabilidad = document.getElementById("btn-contabilidad");
+
+      if (usuarioRol !== "dueño" && botonContabilidad) {
+        botonContabilidad.style.display = "none";
+      }
+    </script>
   </body>
 </html>
