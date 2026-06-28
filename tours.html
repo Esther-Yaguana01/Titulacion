@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tours - Gestión Turística Inteligente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="supabase-config.js"></script>
+    <style>
+      :root{
+        --navy:#0b4970;
+        --turquoise:#17b6cf;
+        --white:#ffffff;
+        --green:#16a34a;
+        --border:#e4e8eb;
+      }
+      *{margin:0;padding:0;box-sizing:border-box}
+      body{
+        min-height:100vh;
+        font-family:'Poppins',system-ui,Segoe UI,Roboto,Arial,sans-serif;
+        background-image:url('assets/fishes.png');
+        background-size:cover;
+        background-position:center top;
+        background-attachment:fixed;
+        background-repeat:no-repeat;
+        color:var(--white);
+      }
+      body::before{
+        content:'';
+        position:fixed;
+        inset:0;
+        background:rgba(3,18,28,0.45);
+        z-index:0;
+      }
+      .topbar{position:relative;z-index:1;background:var(--navy);padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+      .brand{font-weight:700;color:var(--white);font-size:20px}
+      nav ul{list-style:none;display:flex;gap:20px;align-items:center}
+      nav a{color:var(--white);text-decoration:none;font-weight:600}
+      nav a:hover{opacity:0.9}
+      main{position:relative;z-index:1;padding:40px 20px;display:flex;justify-content:center}
+      .page-shell{width:min(1280px,100%);background:rgba(255,255,255,0.95);border-radius:16px;padding:32px;box-shadow:0 10px 30px rgba(0,0,0,0.16);color:var(--navy)}
+      .page-title{font-size:30px;font-weight:700;margin-bottom:8px}
+      .page-subtitle{color:#5f6f78;margin-bottom:24px}
+      .metrics-row{display:grid;grid-template-columns:repeat(2,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+      .metric-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:0 6px 16px rgba(0,0,0,0.05)}
+      .metric-label{font-size:13px;color:#5f6f78;margin-bottom:6px}
+      .metric-value{font-size:22px;font-weight:700;color:var(--navy)}
+      .season-panel{display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(90deg, rgba(23,182,207,0.12), rgba(255,255,255,0.9));border:1px solid rgba(23,182,207,0.18);border-radius:14px;padding:16px 18px;margin-bottom:24px}
+      .season-title{font-size:16px;font-weight:700;color:var(--navy)}
+      .season-options{display:flex;gap:10px;flex-wrap:wrap}
+      .season-option{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:999px;background:var(--white);font-size:13px;color:#4d5a63;cursor:pointer}
+      .season-option input{accent-color:var(--turquoise)}
+      .calendar-panel{background:rgba(255,255,255,0.9);border:1px solid rgba(23,182,207,0.18);border-radius:14px;padding:18px;margin-bottom:24px;box-shadow:0 8px 18px rgba(0,0,0,0.05)}
+      .calendar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+      .calendar-nav{display:flex;gap:8px}
+      .calendar-nav button{border:none;background:var(--turquoise);color:var(--navy);padding:8px 12px;border-radius:8px;font-weight:700;cursor:pointer;transition:transform 0.2s ease, opacity 0.2s ease}
+      .calendar-nav button:hover{transform:translateY(-1px);opacity:0.95}
+      .tab-list{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
+      .tab-btn{border:1px solid var(--border);background:#f7fbfc;color:var(--navy);padding:8px 12px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer}
+      .tab-btn.active{background:var(--turquoise);color:var(--navy)}
+      .calendar-shell{display:grid;grid-template-columns:1.7fr 0.9fr;gap:18px;margin-bottom:24px}
+      .calendar-grid{display:grid;grid-template-columns:repeat(7, minmax(0, 1fr));gap:8px}
+      .calendar-day-name{font-size:12px;font-weight:700;color:var(--navy);text-align:center;padding:6px 0}
+      .calendar-cell{min-height:92px;border:1px solid #e7eef1;border-radius:10px;padding:8px;background:rgba(255,255,255,0.8);cursor:pointer;transition:transform 0.15s ease, box-shadow 0.15s ease}
+      .calendar-cell:hover{transform:translateY(-1px);box-shadow:0 8px 16px rgba(11,73,112,0.08)}
+      .calendar-cell.selected{outline:2px solid var(--turquoise);box-shadow:inset 0 0 0 1px rgba(23,182,207,0.25)}
+      .calendar-cell.alerta{background:rgba(250,204,21,0.16);border-color:rgba(250,204,21,0.45)}
+      .calendar-cell.cancelado{background:rgba(220,38,38,0.12);border-color:rgba(220,38,38,0.35)}
+      .calendar-cell.occupied{background:rgba(23,182,207,0.14);border-color:rgba(23,182,207,0.35)}
+      .calendar-date{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px}
+      .calendar-badge{display:block;padding:4px 6px;border-radius:999px;background:rgba(23,182,207,0.16);color:var(--turquoise);font-size:10px;line-height:1.2;margin-bottom:4px}
+      .calendar-badge.available{background:rgba(11,73,112,0.12);color:var(--navy)}
+      .calendar-badge.alerta{background:rgba(245,158,11,0.18);color:#b45309}
+      .calendar-badge.cancelado{background:rgba(220,38,38,0.14);color:#b91c1c}
+      .calendar-badge.occupied{background:rgba(23,182,207,0.22);color:var(--navy)}
+      .calendar-sidebar{background:rgba(255,255,255,0.9);border:1px solid rgba(23,182,207,0.18);border-radius:14px;padding:16px;box-shadow:0 8px 18px rgba(0,0,0,0.05)}
+      .calendar-sidebar h3{font-size:16px;margin-bottom:8px;color:var(--navy)}
+      .sidebar-note{font-size:12px;color:#6b7280;margin-bottom:10px;line-height:1.4}
+      .sidebar-note.locked{color:#b45309}
+      .sidebar-control{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:10px;font:inherit;color:var(--navy)}
+      .sidebar-control:disabled{background:#eef2f7;color:#9ca3af;cursor:not-allowed}
+      .sidebar-actions button{width:100%;padding:10px 12px;border:none;border-radius:8px;background:var(--turquoise);color:var(--navy);font-weight:700;cursor:pointer}
+      .sidebar-actions button:disabled{background:#d1d5db;color:#6b7280;cursor:not-allowed}
+      .cards-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+      .tour-card{position:relative;background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 8px 18px rgba(0,0,0,0.06)}
+      .tour-card h3{font-size:18px;margin-bottom:10px;color:var(--navy)}
+      .tour-card .badge{position:absolute;top:14px;right:14px;display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(22,163,74,0.14);color:var(--green);font-size:12px;font-weight:700}
+      .tour-meta{display:flex;flex-direction:column;gap:8px;font-size:14px;color:#4d5a63;margin-top:10px}
+      .tour-meta span{display:flex;justify-content:space-between;gap:12px}
+      .price-box{margin-top:8px;padding:10px;border-radius:10px;background:#f7fbfc;border:1px solid #e8eef1}
+      .price-box .price-line{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px}
+      .price-line.high{color:var(--navy);font-weight:700}
+      .price-line.low{color:#6b7280}
+      .price-line .value{color:var(--turquoise);font-weight:700}
+      .price-line.low .value{color:#6b7280}
+      .btn-manage{margin-top:14px;width:100%;padding:10px 12px;border:none;border-radius:8px;background:var(--turquoise);color:var(--navy);font-weight:700;cursor:pointer}
+      .btn-manage:hover{opacity:0.95}
+      .edit-panel{display:none;position:fixed;inset:0;background:rgba(3,18,28,0.55);align-items:center;justify-content:center;z-index:5;padding:20px}
+      .edit-panel.open{display:flex}
+      .edit-card{background:var(--white);border-radius:14px;padding:20px;max-width:360px;width:100%;box-shadow:0 12px 30px rgba(0,0,0,0.2)}
+      .edit-card h4{font-size:18px;margin-bottom:12px;color:var(--navy)}
+      .edit-card label{display:block;font-size:13px;color:#4d5a63;margin-bottom:6px}
+      .edit-card input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:10px}
+      .edit-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:8px}
+      .edit-actions button{padding:8px 12px;border:none;border-radius:8px;cursor:pointer;font-weight:700}
+      .edit-actions .save{background:var(--turquoise);color:var(--navy)}
+      .edit-actions .cancel{background:#e5e7eb;color:#374151}
+      @media(max-width:900px){.calendar-shell{grid-template-columns:1fr}.cards-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media(max-width:640px){.cards-grid{grid-template-columns:1fr}.metrics-row{grid-template-columns:1fr}.season-panel{flex-direction:column;align-items:flex-start}}
+      /* Comentario académico: la elasticidad de precios por temporada optimiza la gestión de inventario turístico y la capacidad de respuesta del operador en Galápagos. */
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Isabela Tour Center</div>
+      <nav aria-label="Menú principal">
+        <ul>
+          <li><a href="index.html">Inicio</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <section class="page-shell">
+        <h1 class="page-title">Panel de Tours</h1>
+        <p class="page-subtitle">Gestión operativa de capacidad, duración y disponibilidad de los recorridos de Isabela.</p>
+
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="metric-label">Tours Activos</div>
+            <div class="metric-value">6</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Lanchas en Operación</div>
+            <div class="metric-value">3</div>
+          </div>
+        </div>
+
+        <div class="season-panel">
+          <div class="season-title">Control de Temporada Activa</div>
+          <div class="season-options">
+            <label class="season-option"><input type="radio" name="season" checked> Temporada Alta</label>
+            <label class="season-option"><input type="radio" name="season"> Temporada Baja</label>
+          </div>
+        </div>
+
+        <div class="calendar-shell">
+          <section class="calendar-panel" aria-label="Calendario operativo de salidas mensuales">
+            <div class="calendar-header">
+              <div class="season-title">Calendario Operativo de Salidas Mensuales</div>
+              <div class="calendar-nav">
+                <button type="button" id="prev-month-btn">←</button>
+                <button type="button" id="month-label-btn">Junio 2026</button>
+                <button type="button" id="next-month-btn">→</button>
+              </div>
+            </div>
+            <div class="tab-list" id="tour-tabs"></div>
+            <div class="calendar-grid" id="calendar-grid"></div>
+          </section>
+
+          <aside class="calendar-sidebar">
+            <div class="sidebar-note" id="sidebar-note">Modo Consulta: Solo el Dueño puede alterar alertas climáticas u horarios por mareas.</div>
+            <h3>Gestión de Salida Diaria</h3>
+            <label for="hora-salida">Hora de Salida</label>
+            <input class="sidebar-control" id="hora-salida" type="time" value="07:30" disabled>
+            <label for="estado-climatico">Estado Climático</label>
+            <select class="sidebar-control" id="estado-climatico" disabled>
+              <option>Activo</option>
+              <option>Alerta Marina</option>
+              <option>Cancelado</option>
+            </select>
+            <label for="alerta-marea">Alertas / Mareas</label>
+            <input class="sidebar-control" id="alerta-marea" type="text" value="Condiciones normales" disabled>
+            <label for="capacidad-ajustada">Capacidad Ajustada</label>
+            <input class="sidebar-control" id="capacidad-ajustada" type="number" value="10" disabled>
+            <div class="sidebar-actions">
+              <button type="button" id="guardar-salida" disabled>Guardar Ajuste</button>
+            </div>
+          </aside>
+        </div>
+
+        <div class="cards-grid">
+          <article class="tour-card">
+            <span class="badge">Disponible</span>
+            <h3>Los Túneles</h3>
+            <div class="tour-meta">
+              <span><strong>Capacidad Máxima:</strong> 16 pasajeros</span>
+              <span><strong>Duración:</strong> 6 horas</span>
+            </div>
+            <div class="price-box">
+              <div class="price-line high"><span>Tarifa Temp. Alta</span><span class="value">$150</span></div>
+              <div class="price-line low"><span>Tarifa Temp. Baja</span><span class="value">$110</span></div>
+            </div>
+            <button class="btn-manage" data-tour="Los Túneles">Editar Tarifas</button>
+          </article>
+          <article class="tour-card">
+            <span class="badge">Disponible</span>
+            <h3>Islote Tintoreras</h3>
+            <div class="tour-meta">
+              <span><strong>Capacidad Máxima:</strong> 20 pasajeros</span>
+              <span><strong>Duración:</strong> 4 horas</span>
+            </div>
+            <div class="price-box">
+              <div class="price-line high"><span>Tarifa Temp. Alta</span><span class="value">$85</span></div>
+              <div class="price-line low"><span>Tarifa Temp. Baja</span><span class="value">$65</span></div>
+            </div>
+            <button class="btn-manage" data-tour="Islote Tintoreras">Editar Tarifas</button>
+          </article>
+          <article class="tour-card">
+            <span class="badge">Disponible</span>
+            <h3>Volcán Sierra Negra</h3>
+            <div class="tour-meta">
+              <span><strong>Capacidad Máxima:</strong> 12 pasajeros</span>
+              <span><strong>Duración:</strong> 8 horas</span>
+            </div>
+            <div class="price-box">
+              <div class="price-line high"><span>Tarifa Temp. Alta</span><span class="value">$90</span></div>
+              <div class="price-line low"><span>Tarifa Temp. Baja</span><span class="value">$70</span></div>
+            </div>
+            <button class="btn-manage" data-tour="Volcán Sierra Negra">Editar Tarifas</button>
+          </article>
+          <article class="tour-card">
+            <span class="badge">Disponible</span>
+            <h3>De Bahía</h3>
+            <div class="tour-meta">
+              <span><strong>Capacidad Máxima:</strong> 24 pasajeros</span>
+              <span><strong>Duración:</strong> 3 horas</span>
+            </div>
+            <div class="price-box">
+              <div class="price-line high"><span>Tarifa Temp. Alta</span><span class="value">$60</span></div>
+              <div class="price-line low"><span>Tarifa Temp. Baja</span><span class="value">$45</span></div>
+            </div>
+            <button class="btn-manage" data-tour="De Bahía">Editar Tarifas</button>
+          </article>
+          <article class="tour-card">
+            <span class="badge">Disponible</span>
+            <h3>Humedales</h3>
+            <div class="tour-meta">
+              <span><strong>Capacidad Máxima:</strong> 18 pasajeros</span>
+              <span><strong>Duración:</strong> 5 horas</span>
+            </div>
+            <div class="price-box">
+              <div class="price-line high"><span>Tarifa Temp. Alta</span><span class="value">$50</span></div>
+              <div class="price-line low"><span>Tarifa Temp. Baja</span><span class="value">$38</span></div>
+            </div>
+            <button class="btn-manage" data-tour="Humedales">Editar Tarifas</button>
+          </article>
+          <article class="tour-card">
+            <span class="badge">Disponible</span>
+            <h3>Buceo Isla Tortuga</h3>
+            <div class="tour-meta">
+              <span><strong>Capacidad Máxima:</strong> 10 pasajeros</span>
+              <span><strong>Duración:</strong> 7 horas</span>
+            </div>
+            <div class="price-box">
+              <div class="price-line high"><span>Tarifa Temp. Alta</span><span class="value">$220</span></div>
+              <div class="price-line low"><span>Tarifa Temp. Baja</span><span class="value">$180</span></div>
+            </div>
+            <button class="btn-manage" data-tour="Buceo Isla Tortuga">Editar Tarifas</button>
+          </article>
+        </div>
+
+        <div class="edit-panel" id="edit-panel">
+          <div class="edit-card">
+            <h4 id="edit-title">Editar Tarifas</h4>
+            <label for="alta-input">Tarifa Temporada Alta</label>
+            <input type="number" id="alta-input" value="150" />
+            <label for="baja-input">Tarifa Temporada Baja</label>
+            <input type="number" id="baja-input" value="110" />
+            <div class="edit-actions">
+              <button class="cancel" id="cancel-edit">Cancelar</button>
+              <button class="save" id="save-edit">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      // Control dinámico del calendario operativo: consulta de reservas en Supabase, edición del panel lateral y navegación mensual.
+      const editPanel = document.getElementById('edit-panel');
+      const editTitle = document.getElementById('edit-title');
+      const saveBtn = document.getElementById('save-edit');
+      const cancelBtn = document.getElementById('cancel-edit');
+      const buttons = document.querySelectorAll('.btn-manage');
+      const calendarGrid = document.getElementById('calendar-grid');
+      const tourTabs = document.getElementById('tour-tabs');
+      const sidebarNote = document.getElementById('sidebar-note');
+      const prevMonthBtn = document.getElementById('prev-month-btn');
+      const monthLabelBtn = document.getElementById('month-label-btn');
+      const nextMonthBtn = document.getElementById('next-month-btn');
+      const horaInput = document.getElementById('hora-salida');
+      const estadoInput = document.getElementById('estado-climatico');
+      const alertaInput = document.getElementById('alerta-marea');
+      const capacidadInput = document.getElementById('capacidad-ajustada');
+      const guardarSalidaBtn = document.getElementById('guardar-salida');
+      const usuarioRol = (sessionStorage.getItem('usuarioRol') || '').toLowerCase();
+      const isOwner = usuarioRol === 'dueño';
+
+      const tourOptions = [
+        { name: 'Los Túneles', value: 'tuneles', capacity: 16 },
+        { name: 'Islote Tintoreras', value: 'tintoreras', capacity: 20 },
+        { name: 'Volcán Sierra Negra', value: 'sierra-negra', capacity: 12 },
+        { name: 'De Bahía', value: 'bahia', capacity: 24 },
+        { name: 'Humedales', value: 'humedales', capacity: 18 },
+        { name: 'Buceo Isla Tortuga', value: 'buceo-isla-tortuga', capacity: 10 }
+      ];
+
+      let activeTour = tourOptions[0];
+      let reservasData = [];
+      let displayDate = new Date(2026, 5, 1);
+      let selectedDateKey = null;
+      let dayStateByDate = {};
+
+      function loadDayState() {
+        try {
+          const stored = localStorage.getItem('tour-day-state');
+          dayStateByDate = stored ? JSON.parse(stored) : {};
+        } catch (error) {
+          dayStateByDate = {};
+        }
+      }
+
+      function saveDayState() {
+        localStorage.setItem('tour-day-state', JSON.stringify(dayStateByDate));
+      }
+
+      function getDateKey(date) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      }
+
+      function getDefaultDayState(dateKey) {
+        return {
+          horaSalida: '07:30',
+          estadoClimatico: 'Activo',
+          alertaMarea: 'Condiciones normales',
+          capacidad: activeTour.capacity,
+          dateKey
+        };
+      }
+
+      function getDayState(dateKey) {
+        return dayStateByDate[dateKey] || getDefaultDayState(dateKey);
+      }
+
+      function setSidebarFromDate(dateKey) {
+        const state = getDayState(dateKey);
+        horaInput.value = state.horaSalida || '07:30';
+        estadoInput.value = state.estadoClimatico || 'Activo';
+        alertaInput.value = state.alertaMarea || 'Condiciones normales';
+        capacidadInput.value = state.capacidad || activeTour.capacity;
+      }
+
+      function updateSidebarNote() {
+        if (isOwner) {
+          sidebarNote.textContent = 'Dueño activo: puedes ajustar horarios, capacidad y alertas climáticas de forma interactiva.';
+          sidebarNote.classList.remove('locked');
+        } else {
+          sidebarNote.textContent = 'Modo consulta: solo el dueño puede modificar la operación diaria.';
+          sidebarNote.classList.add('locked');
+        }
+      }
+
+      function toggleSidebarControls(enabled) {
+        [horaInput, estadoInput, alertaInput, capacidadInput, guardarSalidaBtn].forEach((control) => {
+          control.disabled = !enabled;
+        });
+      }
+
+      function buildTabs() {
+        tourTabs.innerHTML = '';
+        tourOptions.forEach((tour) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'tab-btn' + (tour.name === activeTour.name ? ' active' : '');
+          button.textContent = tour.name;
+          button.addEventListener('click', () => {
+            activeTour = tour;
+            buildTabs();
+            loadReservations();
+          });
+          tourTabs.appendChild(button);
+        });
+      }
+
+      function getVisualState(totalPassengers, capacity, stateEntry) {
+        if (stateEntry?.estadoClimatico === 'Cancelado') {
+          return { className: 'cancelado', text: 'Cancelado' };
+        }
+        if (stateEntry?.estadoClimatico === 'Alerta Marina') {
+          return { className: 'alerta', text: 'Alerta Marina' };
+        }
+        if (totalPassengers > 0) {
+          return { className: 'occupied', text: `Ocupado ${totalPassengers}/${capacity}` };
+        }
+        return { className: 'available', text: 'Disponible' };
+      }
+
+      function renderCalendar() {
+        const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+        calendarGrid.innerHTML = '';
+        monthLabelBtn.textContent = displayDate.toLocaleDateString('es-EC', { month: 'long', year: 'numeric' }).replace(/^./, (c) => c.toUpperCase());
+
+        dayNames.forEach((day) => {
+          const header = document.createElement('div');
+          header.className = 'calendar-day-name';
+          header.textContent = day;
+          calendarGrid.appendChild(header);
+        });
+
+        const year = displayDate.getFullYear();
+        const month = displayDate.getMonth();
+        const firstDay = (new Date(year, month, 1).getDay() + 6) % 7;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const cellsToRender = firstDay + daysInMonth;
+        const extraCells = cellsToRender % 7 === 0 ? 0 : 7 - (cellsToRender % 7);
+
+        for (let index = 0; index < firstDay; index += 1) {
+          const cell = document.createElement('div');
+          cell.className = 'calendar-cell';
+          cell.innerHTML = '<div class="calendar-date">&nbsp;</div>';
+          calendarGrid.appendChild(cell);
+        }
+
+        for (let day = 1; day <= daysInMonth; day += 1) {
+          const cell = document.createElement('div');
+          const date = new Date(year, month, day);
+          const dateKey = getDateKey(date);
+          const stateEntry = getDayState(dateKey);
+          const passengers = reservasData
+            .filter((reserva) => reserva.seleccion_tour === activeTour.value && reserva.fecha_tour === dateKey)
+            .reduce((sum, reserva) => sum + Number(reserva.numero_pasajeros || 0), 0);
+          const visualState = getVisualState(passengers, activeTour.capacity, stateEntry);
+          const selectedClass = selectedDateKey === dateKey ? 'selected' : '';
+          cell.className = `calendar-cell ${selectedClass} ${visualState.className}`;
+          cell.innerHTML = `
+            <div class="calendar-date">${day}</div>
+            <span class="calendar-badge ${visualState.className}">${stateEntry.horaSalida || '07:30'} - ${visualState.text}</span>
+            <span class="calendar-badge ${visualState.className}">14:00 - ${visualState.text}</span>
+          `;
+          cell.addEventListener('click', () => {
+            selectedDateKey = dateKey;
+            setSidebarFromDate(dateKey);
+            renderCalendar();
+          });
+          calendarGrid.appendChild(cell);
+        }
+
+        for (let index = 0; index < extraCells; index += 1) {
+          const cell = document.createElement('div');
+          cell.className = 'calendar-cell';
+          cell.innerHTML = '<div class="calendar-date">&nbsp;</div>';
+          calendarGrid.appendChild(cell);
+        }
+      }
+
+      async function loadReservations() {
+        const { data, error } = await supabaseClient.select();
+        if (!error) {
+          reservasData = Array.isArray(data) ? data : [];
+        }
+        renderCalendar();
+      }
+
+      function handleSaveAdjustment() {
+        if (!selectedDateKey) {
+          selectedDateKey = getDateKey(displayDate);
+        }
+        dayStateByDate[selectedDateKey] = {
+          horaSalida: horaInput.value || '07:30',
+          estadoClimatico: estadoInput.value || 'Activo',
+          alertaMarea: alertaInput.value || 'Condiciones normales',
+          capacidad: Number(capacidadInput.value) || activeTour.capacity,
+          dateKey: selectedDateKey
+        };
+        saveDayState();
+        renderCalendar();
+      }
+
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+          editTitle.textContent = `Editar Tarifas · ${button.dataset.tour}`;
+          editPanel.classList.add('open');
+        });
+      });
+
+      cancelBtn.addEventListener('click', () => {
+        editPanel.classList.remove('open');
+      });
+
+      saveBtn.addEventListener('click', () => {
+        editPanel.classList.remove('open');
+      });
+
+      prevMonthBtn.addEventListener('click', () => {
+        displayDate = new Date(displayDate.getFullYear(), displayDate.getMonth() - 1, 1);
+        if (!selectedDateKey) {
+          selectedDateKey = getDateKey(displayDate);
+        }
+        loadReservations();
+      });
+
+      nextMonthBtn.addEventListener('click', () => {
+        displayDate = new Date(displayDate.getFullYear(), displayDate.getMonth() + 1, 1);
+        if (!selectedDateKey) {
+          selectedDateKey = getDateKey(displayDate);
+        }
+        loadReservations();
+      });
+
+      guardarSalidaBtn.addEventListener('click', handleSaveAdjustment);
+
+      loadDayState();
+      updateSidebarNote();
+      toggleSidebarControls(isOwner);
+      buildTabs();
+      if (!selectedDateKey) {
+        selectedDateKey = getDateKey(displayDate);
+      }
+      setSidebarFromDate(selectedDateKey);
+      loadReservations();
+    </script>
+  </body>
+</html>

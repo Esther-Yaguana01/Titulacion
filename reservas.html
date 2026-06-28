@@ -226,24 +226,48 @@
     <script>
       // Persistencia de datos orientada a arquitectura web para la tesis.
       const form = document.getElementById('reserva-form');
+      const submitButton = form.querySelector('button[type="submit"]');
+
+      function obtenerDatosReserva() {
+        return {
+          nombre_turista: document.getElementById('nombre').value.trim(),
+          cedula_pasaporte: document.getElementById('cedula').value.trim(),
+          fecha_tour: document.getElementById('fecha').value,
+          numero_pasajeros: Number(document.getElementById('pasajeros').value),
+          seleccion_tour: document.getElementById('tour').value
+        };
+      }
+
+      async function guardarReserva(reserva) {
+        if (!window.supabaseClient) {
+          throw new Error('Supabase no esta configurado. Revisa supabase-config.js.');
+        }
+
+        const { data, error } = await window.supabaseApp.insertReserva([reserva]);
+
+        if (error) {
+          throw error;
+        }
+
+        return data;
+      }
 
       form.addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        const datos_formulario = {
-          nombre_turista: document.getElementById('nombre').value,
-          cedula_pasaporte: document.getElementById('cedula').value,
-          fecha_tour: document.getElementById('fecha').value,
-          numero_pasajeros: document.getElementById('pasajeros').value,
-          seleccion_tour: document.getElementById('tour').value
-        };
+        const datosReserva = obtenerDatosReserva();
+        submitButton.disabled = true;
+        submitButton.textContent = 'Guardando...';
 
-        const { data, error } = await supabaseClient.from('reservas').insert([datos_formulario]);
-
-        if (error) {
+        try {
+          await window.supabaseApp.insertReserva(datosReserva);
+        } catch (error) {
           console.error('No se pudo guardar la reserva:', error);
-          alert('No se pudo guardar la reserva. Intenta nuevamente.');
+          alert('No se pudo guardar la reserva. Revisa la conexion con Supabase e intenta nuevamente.');
           return;
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Confirmar Reserva';
         }
 
         alert('¡Reserva confirmada! Nos pondremos en contacto pronto.');

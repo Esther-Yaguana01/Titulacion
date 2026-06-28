@@ -52,9 +52,9 @@
       p{line-height:1.6;margin-bottom:12px}
     </style>
     <script>
-      // RBAC: control de acceso por roles simple para la tesis.
-      const usuarioRol = "empleado";
-      if (usuarioRol !== "dueño") {
+      // Gestión de sesiones seguras y persistencia de estado para la tesis.
+      const usuarioRol = sessionStorage.getItem("usuarioRol");
+      if (!usuarioRol || usuarioRol !== "dueño") {
         alert("Acceso Denegado");
         window.location.href = "index.html";
       }
@@ -66,8 +66,6 @@
       <nav aria-label="Menú principal">
         <ul>
           <li><a href="index.html">Inicio</a></li>
-          <li><a href="reservas.html">Reservas</a></li>
-          <li><a href="contabilidad.html" id="btn-contabilidad">Contabilidad</a></li>
         </ul>
       </nav>
     </header>

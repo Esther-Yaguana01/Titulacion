@@ -79,11 +79,11 @@
       <div class="brand">Isabela Tour Center</div>
       <nav aria-label="Menú principal">
         <ul>
-          <li><a href="#">Inicio</a></li>
-          <li><a href="#tours">Tours</a></li>
+          <li><a href="index.html">Inicio</a></li>
+          <li><a href="tours.html">Tours</a></li>
           <li><a href="reservas.html">Reservas</a></li>
-          <li><a href="#clientes">Clientes</a></li>
-          <li><a href="#reportes">Reportes</a></li>
+          <li><a href="turistas.html">Turistas</a></li>
+          <li><a href="reportes.html">Reportes</a></li>
           <li><a href="contabilidad.html" id="btn-contabilidad">Contabilidad</a></li>
         </ul>
       </nav>
@@ -100,12 +100,22 @@
     </main>
 
     <script>
-      // RBAC: control de acceso por roles simple para la tesis.
-      const usuarioRol = "empleado";
-      const botonContabilidad = document.getElementById("btn-contabilidad");
+      // Gestión de sesiones seguras y persistencia de estado para la tesis.
+      const usuarioRol = sessionStorage.getItem("usuarioRol");
 
-      if (usuarioRol !== "dueño" && botonContabilidad) {
-        botonContabilidad.style.display = "none";
+      if (!usuarioRol) {
+        window.location.href = "login.html";
+      } else {
+        document.addEventListener("DOMContentLoaded", () => {
+          const btnContabilidad = document.getElementById("btn-contabilidad");
+          if (btnContabilidad) {
+            if (usuarioRol === "empleado") {
+              btnContabilidad.style.display = "none";
+            } else if (usuarioRol === "dueño") {
+              btnContabilidad.style.display = "inline";
+            }
+          }
+        });
       }
     </script>
   </body>

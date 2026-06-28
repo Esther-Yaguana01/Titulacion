@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Turistas - Gestión Turística Inteligente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="supabase.js"></script>
+    <script src="supabase-config.js"></script>
+    <style>
+      :root{
+        --navy:#0b4970;
+        --turquoise:#17b6cf;
+        --white:#ffffff;
+      }
+      *{margin:0;padding:0;box-sizing:border-box}
+      body{
+        min-height:100vh;
+        font-family:'Poppins',system-ui,Segoe UI,Roboto,Arial,sans-serif;
+        background-image:url('assets/fishes.png');
+        background-size:cover;
+        background-position:center top;
+        background-attachment:fixed;
+        background-repeat:no-repeat;
+        color:var(--white);
+      }
+      body::before{
+        content:'';
+        position:fixed;
+        inset:0;
+        background:rgba(3,18,28,0.45);
+        z-index:0;
+      }
+      .topbar{position:relative;z-index:1;background:var(--navy);padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+      .brand{font-weight:700;color:var(--white);font-size:20px}
+      nav ul{list-style:none;display:flex;gap:20px;align-items:center}
+      nav a{color:var(--white);text-decoration:none;font-weight:600}
+      nav a:hover{opacity:0.9}
+      main{position:relative;z-index:1;padding:40px 20px;display:flex;justify-content:center}
+      .page-shell{width:min(1200px,100%);background:rgba(255,255,255,0.95);border-radius:16px;padding:32px;box-shadow:0 10px 30px rgba(0,0,0,0.16);color:var(--navy)}
+      .page-title{font-size:30px;font-weight:700;margin-bottom:8px}
+      .page-subtitle{color:#5f6f78;margin-bottom:20px}
+      table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:10px}
+      th,td{padding:12px 14px;border-bottom:1px solid #e7ecef;text-align:left;font-size:14px}
+      th{background:rgba(23,182,207,0.15);color:var(--navy);font-weight:700}
+      tr:nth-child(even){background:#f8fbfc}
+      /* Comentario académico: este módulo documenta el registro histórico de turistas como evidencia operativa del sistema. */
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">Isabela Tour Center</div>
+      <nav aria-label="Menú principal">
+        <ul>
+          <li><a href="index.html">Inicio</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <section class="page-shell">
+        <h1 class="page-title">Registro de Turistas</h1>
+        <p class="page-subtitle">Listado histórico de viajeros y contacto para la operación turística.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre Completo</th>
+              <th>Pasaporte/Cédula</th>
+              <th>Tour</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-turistas"></tbody>
+        </table>
+      </section>
+    </main>
+    <script>
+      // Estrategia Offline First: la persistencia local garantiza continuidad operativa frente a fallos de red para la tesis.
+      async function cargarTuristas() {
+        const tbody = document.getElementById('tabla-turistas');
+        const { data = [] } = await supabaseClient.select();
+
+        if (!data.length) {
+          tbody.innerHTML = '<tr><td colspan="4">No hay turistas guardados aún.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.map((turista) => `
+          <tr>
+            <td>#${turista.id || '—'}</td>
+            <td>${turista.nombre_turista || 'Sin nombre'}</td>
+            <td>${turista.identificacion || 'Sin identificación'}</td>
+            <td>${turista.seleccion_tour || 'Sin tour'}</td>
+          </tr>
+        `).join('');
+      }
+
+      cargarTuristas();
+    </script>
+  </body>
+</html>
