@@ -12,8 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const password = document.getElementById('password').value;
 
     try {
-      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
+      const url = 'https://azeceudkljvejbmuxmun.supabase.co';
+      const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6ZWNldWRrbGp2ZWpibXV4bXVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1ODI0NjIsImV4cCI6MjA5ODE1ODQ2Mn0.nvkoTb0uXZkrXApSBvN1mT_5H9S9WIHs3cJtSePGXew';
+      const miCliente = supabase.createClient(url, key);
+      const { data, error } = await miCliente.auth.signInWithPassword({ email, password });
       if (error) {
         message.textContent = 'Credenciales inválidas. Intenta nuevamente.';
         console.error(error);
